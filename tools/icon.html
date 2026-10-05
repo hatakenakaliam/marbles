@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>html,body{margin:0;background:#888}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+  // Dev-only: renders the app icon with the same painter the app uses. Captured by tools/shoot.mjs.
+  import { paintMarble } from '/src/marble.ts';
+  const q = new URLSearchParams(location.search);
+  const size = +q.get('s') || 512;
+  const fill = +q.get('f') || 0.3;
+  const c = document.getElementById('c');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#F3F1EC';
+  ctx.fillRect(0, 0, size, size);
+  paintMarble(ctx, size / 2, size * 0.49, size * fill, 4);
+</script>
