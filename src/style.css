@@ -197,7 +197,6 @@ input {
 .kb {
   position: absolute;
   inset: 0;
-  transform: translateY(calc(-1 * var(--kb, 0px)));
   transition: transform 250ms var(--ease);
 }
 .sheet {

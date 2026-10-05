@@ -14,19 +14,25 @@ stage.addEventListener('transitionend', (e) => {
 
 interface Options {
   modal: boolean;
+  /** With the keyboard up, the sheet rises only until this element clears it. */
+  keyboardAnchor?: HTMLElement;
   full?: boolean;
   onClose?: () => void;
 }
+
+const sheets: Sheet[] = [];
 
 /** A bottom sheet that tracks the finger 1:1 and dismisses on a flick or a 25% drag. */
 export class Sheet {
   readonly wrap = h('div', 'sheet-wrap');
   readonly el = h('div', 'sheet');
   private backdrop = h('div', 'backdrop');
+  readonly kb = h('div', 'kb');
   isOpen = false;
 
-  constructor(private opts: Options) {
-    const kb = h('div', 'kb');
+  constructor(readonly opts: Options) {
+    const kb = this.kb;
+    sheets.push(this);
     this.el.append(h('div', 'grab'));
     kb.append(this.el);
     if (opts.modal) {
@@ -53,6 +59,7 @@ export class Sheet {
     this.settle();
     this.wrap.classList.remove('open');
     if (this.opts.modal) setStage(0, true);
+    this.kb.style.transform = '';
     this.opts.onClose?.();
   }
 
@@ -115,15 +122,29 @@ export class Sheet {
   }
 }
 
-// Keep sheets above the iOS keyboard: the layout viewport doesn't shrink there, only the visual one.
+// The iOS keyboard covers the page without resizing it. Rather than hoisting the whole
+// sheet above the keyboard, lift it only until its anchor (the part needed while typing)
+// clears the keys; the rest waits underneath until the keyboard goes away.
 const vv = window.visualViewport;
+function syncKeyboard() {
+  if (!vv) return;
+  const body = document.body.getBoundingClientRect();
+  const visibleBottom = vv.offsetTop + vv.height;
+  const keyboardUp = body.bottom - visibleBottom > 120;
+  for (const s of sheets) {
+    let lift = 0;
+    if (keyboardUp && s.isOpen) {
+      const anchor = s.opts.keyboardAnchor ?? s.el;
+      const below = s.el.getBoundingClientRect().bottom - anchor.getBoundingClientRect().bottom;
+      lift = Math.max(0, body.bottom - below - visibleBottom + 14);
+    }
+    s.kb.style.transform = lift ? `translateY(${-Math.round(lift)}px)` : '';
+  }
+}
 if (vv) {
-  const sync = () => {
-    // anything under 120px isn't a keyboard, just iOS disagreeing with itself about the viewport
-    const gap = document.body.clientHeight - vv.height - vv.offsetTop;
-    const kb = gap > 120 ? gap : 0;
-    document.documentElement.style.setProperty('--kb', `${Math.round(kb)}px`);
-  };
-  vv.addEventListener('resize', sync);
-  vv.addEventListener('scroll', sync);
+  vv.addEventListener('resize', syncKeyboard);
+  vv.addEventListener('scroll', () => {
+    if (vv.offsetTop > 0) scrollTo(0, 0); // don't let iOS shove the whole app up as well
+    syncKeyboard();
+  });
 }

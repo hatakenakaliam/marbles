@@ -19,7 +19,6 @@ export function createAdd(opts: {
   recent: () => string[];
   onConfirm: (d: Draft, from: { x: number; y: number; r: number }) => void;
 }) {
-  const sheet = new Sheet({ modal: true, onClose: () => name.blur() });
   const root = h('div', 'add');
   root.innerHTML = `
     <input class="name" type="text" placeholder="What did you work on?" maxlength="40"
@@ -32,6 +31,11 @@ export function createAdd(opts: {
       <label class="when press"><span></span><input type="datetime-local" aria-label="Started at" /></label>
       <button class="primary press">Add</button>
     </div>`;
+  const sheet = new Sheet({
+    modal: true,
+    keyboardAnchor: root.querySelector<HTMLElement>('.chips')!,
+    onClose: () => name.blur(),
+  });
   sheet.el.append(root);
 
   const name = root.querySelector<HTMLInputElement>('.name')!;
