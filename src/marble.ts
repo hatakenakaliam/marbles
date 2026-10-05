@@ -13,8 +13,8 @@ export const colorIndex = (_name: string) => 0;
 export const cssColor = (_ci: number) => '#fff';
 
 /**
- * Paints one marble of radius r centred on (cx, cy): smoked glass under a single soft
- * light from above. Nothing here is brighter than it needs to be to read as a sphere.
+ * Paints one marble of radius r centred on (cx, cy). Deliberately graphic rather than
+ * rendered: a pale disc with just enough tone, top to bottom, to suggest a sphere.
  */
 export function paintMarble(
   ctx: CanvasRenderingContext2D,
@@ -24,58 +24,24 @@ export function paintMarble(
   _ci = 0,
   _shadow = true,
 ) {
-  const w = (a: number) => `rgba(255,255,255,${a})`;
-  let g: CanvasGradient;
-
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.clip();
 
-  // body: lit from above, falling away evenly to the base
-  g = ctx.createLinearGradient(cx - r * 0.25, cy - r, cx + r * 0.25, cy + r);
-  g.addColorStop(0, '#8a8a8e');
-  g.addColorStop(0.45, '#4a4a4e');
-  g.addColorStop(1, '#2a2a2d');
+  let g: CanvasGradient = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
+  g.addColorStop(0, '#f1f0ec');
+  g.addColorStop(1, '#bfbeba');
   ctx.fillStyle = g;
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-  // curvature: the face stays open, the sides turn away into shade
-  g = ctx.createRadialGradient(cx - r * 0.12, cy - r * 0.2, r * 0.3, cx, cy, r);
+  // the faintest turn at the edge, so neighbours don't merge into one shape
+  g = ctx.createRadialGradient(cx, cy - r * 0.1, r * 0.7, cx, cy, r);
   g.addColorStop(0, 'rgba(0,0,0,0)');
-  g.addColorStop(0.78, 'rgba(0,0,0,0.1)');
-  g.addColorStop(1, 'rgba(0,0,0,0.34)');
-  ctx.fillStyle = g;
-  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-
-  // one diffuse highlight, no hard edge
-  const hx = cx - r * 0.2;
-  const hy = cy - r * 0.46;
-  g = ctx.createRadialGradient(hx, hy, 0, hx, hy, r * 0.62);
-  g.addColorStop(0, w(0.46));
-  g.addColorStop(0.3, w(0.2));
-  g.addColorStop(1, w(0));
-  ctx.fillStyle = g;
-  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-
-  // a breath of light returning through the base
-  g = ctx.createRadialGradient(cx + r * 0.1, cy + r * 0.82, 0, cx + r * 0.1, cy + r * 0.82, r * 0.75);
-  g.addColorStop(0, w(0.2));
-  g.addColorStop(1, w(0));
+  g.addColorStop(1, 'rgba(0,0,0,0.1)');
   ctx.fillStyle = g;
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
   ctx.restore();
-
-  // hairline edge, catching the light at the top and fading out below
-  g = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
-  g.addColorStop(0, w(0.6));
-  g.addColorStop(0.55, w(0.16));
-  g.addColorStop(1, w(0.1));
-  ctx.strokeStyle = g;
-  ctx.lineWidth = Math.max(r * 0.014, 0.5);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
-  ctx.stroke();
 }
 
 // Mip chain: a marble is drawn from the smallest sprite at least as big as it is on screen.

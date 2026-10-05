@@ -208,5 +208,10 @@ $<HTMLInputElement>('input[type=file]', backupBody).addEventListener('change', a
 document.addEventListener('touchstart', () => {}, { passive: true });
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  // When a new version takes over an already-open app, reload once so it's what you see.
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (had) location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
 }

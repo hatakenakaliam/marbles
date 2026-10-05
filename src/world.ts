@@ -57,6 +57,8 @@ let sheetInset = 0;
 
 let nodes: Node[] = [];
 let selected: Node | null = null;
+/** The marble the rest of the cluster dims around; outlives `selected` while it settles back. */
+let spot: Node | null = null;
 const animating = new Set<Node>();
 const ghosts = new Map<string, { x: number; y: number }>();
 const flights: Flight[] = [];
@@ -379,7 +381,7 @@ function doubleTap(x: number, y: number) {
 // ── selection ─────────────────────────────────────────────────────────────
 function select(n: Node) {
   if (selected && selected !== n) release(selected);
-  selected = n;
+  selected = spot = n;
   n.lt = 1;
   n.fx = n.x;
   n.fy = n.y;
@@ -599,7 +601,7 @@ function frame(now: number) {
   else last = 0;
 }
 
-function drawNode(n: Node, ox: number, oy: number, z: number) {
+function drawNode(n: Node, ox: number, oy: number, z: number, dim = 1) {
   const rr = n.r * n.k * z * (1 + LIFT * n.lift);
   if (rr < 0.3) return;
   const x = n.x * z + ox;
@@ -610,7 +612,7 @@ function drawNode(n: Node, ox: number, oy: number, z: number) {
     ctx.globalAlpha = Math.min(1, 0.55 * n.lift);
     ctx.drawImage(shadowSprite(), x - rr * 1.5 + rr * 0.1 * n.lift, y - rr * 1.5 + rr * 0.34 * n.lift, rr * 3, rr * 3);
   }
-  ctx.globalAlpha = n.fade;
+  ctx.globalAlpha = n.fade * dim;
   ctx.drawImage(sprite(n.ci, rr * dpr), x - rr * PAD, y - rr * PAD, rr * PAD * 2, rr * PAD * 2);
   ctx.globalAlpha = 1;
 }
@@ -622,7 +624,9 @@ function render() {
   const z = cam.z;
   const ox = W / 2 - cam.x * z;
   const oy = H / 2 - cam.y * z;
-  for (const n of nodes) if (n.lift <= 0.001) drawNode(n, ox, oy, z);
+  // with every marble alike, the chosen one is shown by quieting the others
+  const dim = spot && nodes.includes(spot) ? 1 - 0.6 * clamp(spot.lift, 0, 1) : 1;
+  for (const n of nodes) if (n.lift <= 0.001) drawNode(n, ox, oy, z, dim);
   for (const f of flights) {
     // the shadow gathers under the spot it's about to land on
     const t = clamp((performance.now() - f.t0) / FLIGHT_MS, 0, 1);
