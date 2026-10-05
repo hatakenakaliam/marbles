@@ -1,29 +1,17 @@
 :root {
-  --bg: #f3f1ec;
-  --surface: #fbfaf8;
-  --ink: #1c1b19;
-  --ink-2: rgba(28, 27, 25, 0.58);
-  --ink-3: rgba(28, 27, 25, 0.34);
-  --fill: rgba(28, 27, 25, 0.06);
-  --line: rgba(28, 27, 25, 0.09);
-  --danger: #b0443a;
+  --bg: #0e0e0d;
+  --surface: #1b1b19;
+  --ink: #f2f0eb;
+  --ink-2: rgba(242, 240, 235, 0.6);
+  --ink-3: rgba(242, 240, 235, 0.36);
+  --fill: rgba(242, 240, 235, 0.08);
+  --line: rgba(242, 240, 235, 0.11);
+  --danger: #e0786c;
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --sheet: cubic-bezier(0.32, 0.72, 0, 1);
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e0e0d;
-    --surface: #1b1b19;
-    --ink: #f2f0eb;
-    --ink-2: rgba(242, 240, 235, 0.6);
-    --ink-3: rgba(242, 240, 235, 0.36);
-    --fill: rgba(242, 240, 235, 0.08);
-    --line: rgba(242, 240, 235, 0.11);
-    --danger: #e0786c;
-  }
+  color-scheme: dark;
 }
 
 * {
@@ -73,10 +61,7 @@ input {
   transform: scale(0.97);
 }
 .dot {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+  display: none;
 }
 
 /* ── stage: everything that recedes behind a sheet ── */
@@ -584,14 +569,8 @@ input {
   bottom: 3px;
   width: calc((100% - 6px) / 3);
   border-radius: 9px;
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px var(--line);
+  background: rgba(242, 240, 235, 0.16);
   transition: transform 220ms var(--ease);
-}
-@media (prefers-color-scheme: dark) {
-  .thumb {
-    background: rgba(242, 240, 235, 0.16);
-  }
 }
 
 /* ── backup ── */

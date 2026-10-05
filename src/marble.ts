@@ -1,32 +1,15 @@
-// Eight restrained jewel tones, plus a neutral for "no name yet".
-export const PALETTE = [
-  '#A2474E', // garnet
-  '#BD873A', // amber
-  '#7C8C48', // peridot
-  '#3D8266', // emerald
-  '#377C8B', // teal
-  '#45629E', // sapphire
-  '#76589A', // amethyst
-  '#A9597F', // rose
-  '#9C978E', // neutral
-];
-export const NEUTRAL = 8;
+// Every marble is the same white glass; size alone carries the meaning.
+export const PALETTE = ['#E6E4DE'];
+export const NEUTRAL = 0;
 
 /** Sprites are drawn with this much room around the marble for its contact shadow. */
 export const PAD = 1.3;
 
-const scheme = matchMedia('(prefers-color-scheme: dark)');
-export const isDark = () => scheme.matches;
-export const onSchemeChange = (fn: () => void) => scheme.addEventListener('change', fn);
+// The app is dark-only.
+export const isDark = () => true;
+export const onSchemeChange = (_fn: () => void) => {};
 
-/** Same name, same colour — case and surrounding whitespace don't matter. */
-export function colorIndex(name: string) {
-  const s = name.trim().toLowerCase();
-  if (!s) return NEUTRAL;
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) hash = Math.imul(hash ^ s.charCodeAt(i), 0x01000193);
-  return (hash >>> 0) % 8;
-}
+export const colorIndex = (_name: string) => 0;
 
 type RGB = [number, number, number];
 const rgb = (hex: string): RGB => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as RGB;
@@ -35,7 +18,7 @@ const css = (c: RGB, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
 
 export function cssColor(ci: number) {
   const c = rgb(PALETTE[ci]);
-  return css(isDark() ? mix(c, 255, 0.08) : c);
+  return css(c);
 }
 
 /** Paints one glass marble of radius r centred on (cx, cy). */
@@ -48,7 +31,7 @@ export function paintMarble(
   shadow = true,
 ) {
   const dark = isDark();
-  const base = dark ? mix(rgb(PALETTE[ci]), 255, 0.08) : rgb(PALETTE[ci]);
+  const base = rgb(PALETTE[ci]);
   let g: CanvasGradient;
 
   if (shadow) {
@@ -62,9 +45,9 @@ export function paintMarble(
 
   // body: lit from the top-left, falling off to a darker far edge
   g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.34, r * 0.04, cx, cy, r);
-  g.addColorStop(0, css(mix(base, 255, 0.26)));
-  g.addColorStop(0.42, css(base));
-  g.addColorStop(1, css(mix(base, 0, 0.52)));
+  g.addColorStop(0, css(mix(base, 255, 0.7)));
+  g.addColorStop(0.4, css(mix(base, 0, 0.1)));
+  g.addColorStop(1, css(mix(base, 0, 0.62)));
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);

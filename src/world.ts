@@ -651,7 +651,7 @@ export const world = {
     canvas = el;
     ctx = el.getContext('2d', { alpha: false })!;
     onSelect = select;
-    dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    dark = true;
     onSchemeChange(() => {
       dark = !dark;
       clearSprites();
