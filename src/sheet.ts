@@ -119,7 +119,9 @@ export class Sheet {
 const vv = window.visualViewport;
 if (vv) {
   const sync = () => {
-    const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+    // anything under 120px isn't a keyboard, just iOS disagreeing with itself about the viewport
+    const gap = document.body.clientHeight - vv.height - vv.offsetTop;
+    const kb = gap > 120 ? gap : 0;
     document.documentElement.style.setProperty('--kb', `${Math.round(kb)}px`);
   };
   vv.addEventListener('resize', sync);

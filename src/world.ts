@@ -635,8 +635,9 @@ function render() {
 }
 
 function resize() {
-  W = innerWidth;
-  H = innerHeight;
+  // measured from the element: iOS under-reports innerHeight in home-screen apps
+  W = canvas.clientWidth;
+  H = canvas.clientHeight;
   dpr = Math.min(devicePixelRatio || 1, 3);
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
@@ -661,7 +662,7 @@ export const world = {
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerup', onUp);
     el.addEventListener('pointercancel', onUp);
-    addEventListener('resize', resize);
+    new ResizeObserver(resize).observe(el);
     resize();
   },
 

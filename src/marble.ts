@@ -1,5 +1,4 @@
 // Every marble is the same white glass; size alone carries the meaning.
-export const PALETTE = ['#E6E4DE'];
 export const NEUTRAL = 0;
 
 /** Sprites are drawn with this much room around the marble for its contact shadow. */
@@ -11,80 +10,96 @@ export const onSchemeChange = (_fn: () => void) => {};
 
 export const colorIndex = (_name: string) => 0;
 
-type RGB = [number, number, number];
-const rgb = (hex: string): RGB => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as RGB;
-const mix = (c: RGB, to: number, t: number): RGB => c.map((v) => v + (to - v) * t) as RGB;
-const css = (c: RGB, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+export const cssColor = (_ci: number) => '#fff';
 
-export function cssColor(ci: number) {
-  const c = rgb(PALETTE[ci]);
-  return css(c);
-}
-
-/** Paints one glass marble of radius r centred on (cx, cy). */
+/** Paints one clear glass marble of radius r centred on (cx, cy). */
 export function paintMarble(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
   r: number,
-  ci: number,
+  _ci = 0,
   shadow = true,
 ) {
-  const dark = isDark();
-  const base = rgb(PALETTE[ci]);
+  const w = (a: number) => `rgba(255,255,255,${a})`;
   let g: CanvasGradient;
 
   if (shadow) {
-    // faint contact shadow, pooled under the bottom-right
-    g = ctx.createRadialGradient(cx + r * 0.05, cy + r * 0.16, r * 0.6, cx + r * 0.05, cy + r * 0.16, r * 1.12);
-    g.addColorStop(0, `rgba(0,0,0,${dark ? 0.5 : 0.26})`);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
+    // light the glass throws onto the surface beneath it, bottom-right
+    g = ctx.createRadialGradient(cx + r * 0.1, cy + r * 0.14, r * 0.7, cx + r * 0.1, cy + r * 0.14, r * 1.14);
+    g.addColorStop(0, w(0.1));
+    g.addColorStop(1, w(0));
     ctx.fillStyle = g;
     ctx.fillRect(cx - r * PAD, cy - r * PAD, r * PAD * 2, r * PAD * 2);
   }
 
-  // body: lit from the top-left, falling off to a darker far edge
-  g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.34, r * 0.04, cx, cy, r);
-  g.addColorStop(0, css(mix(base, 255, 0.7)));
-  g.addColorStop(0.4, css(mix(base, 0, 0.1)));
-  g.addColorStop(1, css(mix(base, 0, 0.62)));
-  ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fill();
-
   ctx.save();
   ctx.clip();
 
-  // light gathered inside the glass, opposite the source
-  g = ctx.createRadialGradient(cx + r * 0.32, cy + r * 0.36, 0, cx + r * 0.32, cy + r * 0.36, r * 0.62);
-  g.addColorStop(0, css(mix(base, 255, 0.34), 0.42));
-  g.addColorStop(1, css(mix(base, 255, 0.34), 0));
+  // the glass itself: nearly clear, a shade off the background
+  ctx.fillStyle = '#17181a';
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // fresnel: transparent face-on, brightening sharply toward the silhouette
+  g = ctx.createRadialGradient(cx, cy, r * 0.45, cx, cy, r);
+  g.addColorStop(0, w(0));
+  g.addColorStop(0.72, w(0.05));
+  g.addColorStop(0.9, w(0.16));
+  g.addColorStop(0.975, w(0.42));
+  g.addColorStop(1, w(0.7));
   ctx.fillStyle = g;
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-  // soft rim light along the bottom-right edge
-  g = ctx.createRadialGradient(cx - r * 0.11, cy - r * 0.11, r * 0.9, cx - r * 0.11, cy - r * 0.11, r * 1.11);
-  g.addColorStop(0, 'rgba(255,255,255,0)');
-  g.addColorStop(1, `rgba(255,255,255,${dark ? 0.36 : 0.42})`);
+  // inner shade under the top-left edge gives the ball its depth
+  g = ctx.createRadialGradient(cx + r * 0.22, cy + r * 0.26, r * 0.55, cx + r * 0.22, cy + r * 0.26, r * 1.3);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.5)');
   ctx.fillStyle = g;
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-  // bloom around the highlight
-  const hx = cx - r * 0.37;
-  const hy = cy - r * 0.41;
-  g = ctx.createRadialGradient(hx, hy, 0, hx, hy, r * 0.36);
-  g.addColorStop(0, 'rgba(255,255,255,0.28)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
+  // light focused through the sphere pools opposite the source
+  g = ctx.createRadialGradient(cx + r * 0.36, cy + r * 0.42, 0, cx + r * 0.36, cy + r * 0.42, r * 0.58);
+  g.addColorStop(0, w(0.5));
+  g.addColorStop(0.45, w(0.16));
+  g.addColorStop(1, w(0));
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // bright rim along the bottom-right
+  g = ctx.createRadialGradient(cx - r * 0.1, cy - r * 0.1, r * 0.92, cx - r * 0.1, cy - r * 0.1, r * 1.1);
+  g.addColorStop(0, w(0));
+  g.addColorStop(1, w(0.95));
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // broad soft reflection across the upper-left
+  const hx = cx - r * 0.36;
+  const hy = cy - r * 0.4;
+  g = ctx.createRadialGradient(hx, hy, 0, hx, hy, r * 0.5);
+  g.addColorStop(0, w(0.26));
+  g.addColorStop(1, w(0));
   ctx.fillStyle = g;
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
   ctx.restore();
 
-  // crisp specular
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  // crisp specular, with a pinpoint beside it
+  ctx.fillStyle = w(0.96);
   ctx.beginPath();
-  ctx.ellipse(hx, hy, r * 0.19, r * 0.105, -0.72, 0, Math.PI * 2);
+  ctx.ellipse(hx, hy, r * 0.2, r * 0.1, -0.72, 0, Math.PI * 2);
   ctx.fill();
+  ctx.fillStyle = w(0.7);
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.1, cy - r * 0.6, r * 0.035, 0, Math.PI * 2);
+  ctx.fill();
+
+  // hairline edge keeps small marbles defined
+  ctx.strokeStyle = w(0.22);
+  ctx.lineWidth = Math.max(r * 0.012, 0.5);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 // Mip chain: a marble is drawn from the smallest sprite at least as big as it is on screen.
