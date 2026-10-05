@@ -3,10 +3,19 @@ const ASSETS = __ASSETS__;
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(ASSETS))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const c = await caches.open(CACHE);
+      // Bypass the HTTP cache: a stale index.html would point at files that no longer exist.
+      await c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' })));
+      // Refuse to install unless the page we cached is the one that belongs to these assets.
+      const html = await (await c.match('./index.html')).text();
+      const built = ASSETS.filter((u) => u.startsWith('./assets/'));
+      if (!built.every((u) => html.includes(u.slice(2)))) {
+        await caches.delete(CACHE);
+        throw new Error('index.html does not match this build yet');
+      }
+      await self.skipWaiting();
+    })(),
   );
 });
 
