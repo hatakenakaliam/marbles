@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Marbles</title>
+    <meta name="description" content="A marble for every block of deep work." />
+    <meta name="theme-color" content="#0E0E0D" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Marbles" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <script type="module" crossorigin src="./assets/index-Bp3ouiRh.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CRYdLL8N.css">
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="c"></canvas>
+      <div id="empty" hidden>
+        <strong>No marbles yet</strong>
+        <span>Log a block of deep work and it lands here.</span>
+      </div>
+      <button id="menu" class="pill press" aria-label="Backup">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <circle cx="3.5" cy="9" r="1.6" /><circle cx="9" cy="9" r="1.6" /><circle cx="14.5" cy="9" r="1.6" />
+        </svg>
+      </button>
+      <button id="stats" class="pill press">Stats</button>
+      <button id="add" class="press" aria-label="Log a session">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+          <path d="M11 3v16M3 11h16" stroke-width="2.4" stroke-linecap="round" fill="none" />
+        </svg>
+      </button>
+    </div>
+  </body>
+</html>
