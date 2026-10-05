@@ -21,7 +21,9 @@ function serviceWorker(): Plugin {
       const hash = createHash('sha1');
       for (const f of files) hash.update(f).update(readFileSync(f));
       const assets = files.map((f) => './' + relative(out, f).split('\\').join('/'));
-      const sw = readFileSync('src/sw.template.js', 'utf8')
+      const template = readFileSync('src/sw.template.js', 'utf8');
+      hash.update(template);
+      const sw = template
         .replace('__VERSION__', hash.digest('hex').slice(0, 10))
         .replace('__ASSETS__', JSON.stringify(assets));
       writeFileSync(join(out, 'sw.js'), sw);
